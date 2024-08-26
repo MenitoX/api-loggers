@@ -1,0 +1,30 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: fastapi_logs_service_1
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: fastapi_service_1
+          __path__: /var/log/fastapi1/app.log
+    pipeline_stages:
+      - docker: {}
+
+  - job_name: fastapi_logs_service_2
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: fastapi_service_2
+          __path__: /var/log/fastapi2/app.log
+    pipeline_stages:
+      - docker: {}

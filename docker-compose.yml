@@ -1,0 +1,54 @@
+version: '3.7'
+
+services:
+  fastapi_service_1:
+    build: ./fastapi_service_1
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./logs/fastapi1:/var/log/fastapi
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  fastapi_service_2:
+    build: ./fastapi_service_2
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./logs/fastapi2:/var/log/fastapi
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  loki:
+    image: grafana/loki:2.8.2
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki/local-config.yaml:/etc/loki/local-config.yaml
+      - ./loki/wal:/wal
+
+  promtail:
+    image: grafana/promtail:2.8.2
+    volumes:
+      - ./promtail/config.yml:/etc/promtail/config.yml
+      - ./logs:/var/log
+    command: -config.file=/etc/promtail/config.yml
+
+  grafana:
+    image: grafana/grafana:10.0.0
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - loki
+
+volumes:
+  grafana-data:
